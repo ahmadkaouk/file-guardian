@@ -1,9 +1,13 @@
 [workspace]
-members = [
-    "client",
-    "server",
-    "merkle-tree",
-]
+members = ["client", "server", "merkle-tree"]
+
+[workspace.package]
+version  = "0.1.0"
+edition  = "2021"
+authors  = ["Ahmad Kaouk"]
+keywords = ["merkle-tree", "rust", "client", "server"]
 
 [workspace.dependencies]
-sha2 = "0.9.5"
+sha2   = "0.9.5"
+clap   = "4.3.0"
+anyhow = "1.0.71"

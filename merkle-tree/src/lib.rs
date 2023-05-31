@@ -18,10 +18,10 @@
 //! Merkle tree:
 //!
 //! ```rust
-//! use merkle_tree::MerkleTree;
+//! use merkle_tree::{MerkleTree, Sha256Hasher};
 //!
-//! let data = vec!["hello", "world"];
-//! let tree = MerkleTree::new(data);
+//! let data = vec!["hello", "world"].iter().map(|s| s.as_bytes().to_vec()).collect();
+//! let tree = MerkleTree::<Sha256Hasher>::new(&data);
 //! ```
 //!
 //!
@@ -32,3 +32,9 @@
 //!
 //! * [Merkle tree - Wikipedia](https://en.wikipedia.org/wiki/Merkle_tree)
 //! * [Mastering Bitcoin: Unlocking Digital Cryptocurrencies](https://www.oreilly.com/library/view/mastering-bitcoin/9781491902639/ch07.html)
+mod hasher;
+mod tree;
+mod error;
+
+pub use hasher::*;
+pub use tree::*;

@@ -4,3 +4,6 @@ members = [
     "server",
     "merkle-tree",
 ]
+
+[workspace.dependencies]
+sha2 = "0.9.5"

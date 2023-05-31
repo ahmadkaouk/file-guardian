@@ -8,6 +8,7 @@ authors  = ["Ahmad Kaouk"]
 keywords = ["merkle-tree", "rust", "client", "server"]
 
 [workspace.dependencies]
-sha2   = "0.9.5"
-clap   = "4.3.0"
-anyhow = "1.0.71"
+sha2      = "0.9.5"
+clap      = "4.3.0"
+anyhow    = "1.0.71"
+thiserror = "1.0.40"

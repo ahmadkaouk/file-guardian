@@ -5,11 +5,11 @@ use std::path::PathBuf;
 #[command(author, about, version)]
 pub struct Args {
     #[clap(subcommand)]
-    subcmd: SubCommand,
+    pub subcmd: SubCommand,
 }
 
 #[derive(Subcommand)]
-enum SubCommand {
+pub enum SubCommand {
     /// List all the uploaded files
     List,
     /// Upload one or more files(s) to the server

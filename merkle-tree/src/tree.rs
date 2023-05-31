@@ -32,7 +32,7 @@ impl<H: Hasher> MerkleTree<H> {
     /// ];
     /// let tree = MerkleTree::<Sha256Hasher>::new(&data).unwrap();
     /// ```
-    pub fn new(data: &Vec<Vec<u8>>) -> Result<Self, MerkleTreeError> {
+    pub fn new(data: &[impl AsRef<[u8]>]) -> Result<Self, MerkleTreeError> {
         if data.is_empty() {
             return Err(MerkleTreeError::EmptyData);
         }
@@ -158,7 +158,7 @@ mod tests {
 
     #[test]
     fn test_new_empty_data() {
-        let data = vec![];
+        let data: &[&[u8]] = &[];
         let result = TestMerkleTree::new(&data);
         assert!(result.is_err());
         assert_eq!(result.err().unwrap(), MerkleTreeError::EmptyData);

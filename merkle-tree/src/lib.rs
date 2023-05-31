@@ -20,7 +20,7 @@
 //! ```rust
 //! use merkle_tree::{MerkleTree, Sha256Hasher};
 //!
-//! let data = vec!["hello", "world"].iter().map(|s| s.as_bytes().to_vec()).collect();
+//! let data = vec!["hello", "world"];
 //! let tree = MerkleTree::<Sha256Hasher>::new(&data);
 //! ```
 //!

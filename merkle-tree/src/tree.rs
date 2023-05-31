@@ -194,6 +194,15 @@ mod tests {
     }
 
     #[test]
+    fn test_invalid_index(){
+        let data = vec![vec![1, 2, 3], vec![4, 5, 6], vec![7, 8, 9]];
+        let tree = TestMerkleTree::new(&data).unwrap();
+        let result = tree.proof(3);
+        assert!(result.is_err());
+        assert_eq!(result.err().unwrap(), MerkleTreeError::InvalidIndex);
+    }
+    
+    #[test]
     fn test_merkle_tree_verify() {
         let data = vec![
             vec![1, 2, 3],

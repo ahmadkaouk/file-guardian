@@ -40,6 +40,7 @@ pub trait Hasher {
     fn hash<T: AsRef<[u8]>>(data: T) -> Self::Hash;
 }
 
+/// A hasher that uses the SHA-256 hash function.
 pub struct Sha256Hasher;
 
 impl Hasher for Sha256Hasher {

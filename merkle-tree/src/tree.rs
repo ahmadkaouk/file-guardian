@@ -1,8 +1,14 @@
 use crate::{error::MerkleTreeError, hasher::Hasher};
 
-/// A Merkle Tree is a binary tree where each leaf node represents a data block
-/// and each non-leaf node represents a hash of its children nodes. This struct
-/// represents a Merkle Tree with a generic Hasher type parameter.
+/// A Binary Merkle Tree.
+///
+/// The Merkle Tree struct consists a vector of vectors, where each inner vector
+/// represents a level of the tree. The levels vector is populated by iterating
+/// over the data blocks and hashing them to create the leaf nodes, and then
+/// recursively hashing pairs of nodes to create the non-leaf nodes until the
+/// root node is reached. The struct also provides methods to retrieve the root
+/// hash of the tree, generate and verify Merkle proofs, and compute the hash of
+/// the concatenation of two hashes.
 #[derive(Debug)]
 pub struct MerkleTree<H: Hasher> {
     levels: Vec<Vec<H::Hash>>,

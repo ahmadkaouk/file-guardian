@@ -32,9 +32,9 @@
 //!
 //! * [Merkle tree - Wikipedia](https://en.wikipedia.org/wiki/Merkle_tree)
 //! * [Mastering Bitcoin: Unlocking Digital Cryptocurrencies](https://www.oreilly.com/library/view/mastering-bitcoin/9781491902639/ch07.html)
+mod error;
 mod hasher;
 mod tree;
-mod error;
 
 pub use hasher::*;
 pub use tree::*;

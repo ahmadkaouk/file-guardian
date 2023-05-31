@@ -52,4 +52,3 @@ impl Hasher for Sha256Hasher {
         hasher.finalize().into()
     }
 }
-

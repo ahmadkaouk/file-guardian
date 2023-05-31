@@ -154,16 +154,37 @@ mod tests {
     use super::*;
     use crate::hasher::Sha256Hasher;
 
+    type TestMerkleTree = MerkleTree<Sha256Hasher>;
+
     #[test]
-    fn test_merkle_tree_creation() {
-        let data = vec![
-            vec![1, 2, 3],
-            vec![4, 5, 6],
-            vec![7, 8, 9],
-            vec![10, 11, 12],
-        ];
-        let tree = MerkleTree::<Sha256Hasher>::new(&data).unwrap();
-        assert_eq!(tree.levels.len(), 3);
+    fn test_new_empty_data() {
+        let data = vec![];
+        let result = TestMerkleTree::new(&data);
+        assert!(result.is_err());
+        assert_eq!(result.err().unwrap(), MerkleTreeError::EmptyData);
+    }
+
+    #[test]
+    fn test_new_single_leaf() {
+        let data = vec![vec![1, 2, 3]];
+        let tree = TestMerkleTree::new(&data).unwrap();
+        assert_eq!(tree.root().unwrap(), &Sha256Hasher::hash(&data[0]));
+    }
+
+    #[test]
+    fn test_new_odd_number_of_leaves() {
+        let data = vec![vec![1, 2, 3], vec![4, 5, 6], vec![7, 8, 9]];
+        let tree = TestMerkleTree::new(&data).unwrap();
+        assert_eq!(
+            tree.root().unwrap(),
+            &TestMerkleTree::hash_nodes(
+                &TestMerkleTree::hash_nodes(
+                    &Sha256Hasher::hash(&data[0]),
+                    &Sha256Hasher::hash(&data[1])
+                ),
+                &Sha256Hasher::hash(&Sha256Hasher::hash(&data[2])),
+            )
+        );
     }
 
     #[test]

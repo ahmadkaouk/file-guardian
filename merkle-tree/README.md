@@ -55,8 +55,8 @@ let mut file = BufReader::new(File::open("file.txt").unwrap());
 let mut buffer = Vec::new();
 file.read_to_end(&mut buffer).unwrap();
 
-// Compute the Merkle Tree of the file data
-let tree = MerkleTree::<Sha256Hasher>::new(&buffer).unwrap();
+// Compute the Merkle Tree of the file
+let tree = MerkleTree::<Sha256Hasher>::new(&[buffer]).unwrap();
 
 // Verify the integrity of the file against a known root hash
 let root_hash = hex::decode("0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef").unwrap();

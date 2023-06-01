@@ -8,6 +8,9 @@ description = "A Cli client to upload/download files to a server and verify thei
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-clap      = { workspace = "true", features = ["derive"] }
-anyhow    = { workspace = "true" }
-thiserror = { workspace = "true" }
+clap        = { workspace = "true", features = ["derive"] }
+anyhow      = { workspace = "true" }
+thiserror   = { workspace = "true" }
+merkle-tree = { version = "0.1.0", path = "../merkle-tree" }
+serde       = { workspace = "true" }
+serde_json  = { workspace = "true" }

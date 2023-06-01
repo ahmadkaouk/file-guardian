@@ -56,3 +56,49 @@ pub fn write_file(path: &PathBuf, data: &[u8]) -> Result<()> {
     file.write_all(data)?;
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+    use std::io::Write;
+
+    #[test]
+    fn test_read_files() {
+        // Write a temporary file to read
+
+        let mut file = File::create("/tmp/testfile").unwrap();
+        file.write_all(b"Hello, world!").unwrap();
+
+        let contents = read_files(&[PathBuf::from("/tmp/testfile")]).unwrap();
+        // Clean up
+        fs::remove_file("/tmp/testfile").unwrap();
+
+        assert_eq!(contents[0], b"Hello, world!");
+    }
+
+    #[test]
+    fn test_delete_files() {
+        // Create a temporary file to delete
+        File::create("/tmp/testfile1").unwrap();
+
+        delete_files(&[PathBuf::from("/tmp/testfile1")]).unwrap();
+
+        // Test that the file was deleted
+        assert!(File::open("/tmp/testfile1").is_err());
+    }
+
+    #[test]
+    fn test_write_file() {
+        write_file(&PathBuf::from("/tmp/testfile2"), b"Hello, world!").unwrap();
+
+        let mut buffer = Vec::new();
+        // Test that the file was written correctly
+        let mut file = File::open("/tmp/testfile2").unwrap();
+        file.read_to_end(&mut buffer).unwrap();
+
+        // Clean up
+        fs::remove_file("/tmp/testfile2").unwrap();
+        assert_eq!(buffer, b"Hello, world!");
+    }
+}

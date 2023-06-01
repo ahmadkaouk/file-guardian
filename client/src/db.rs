@@ -1,61 +1,170 @@
 // src/db.rs
-use serde_json::json;
+use std::collections::{HashMap, HashSet};
 use std::fs::OpenOptions;
 use std::path::PathBuf;
 
-/// A databse that stores file uploads with their corresponding root hashes.
-/// The database is persisted to a JSON file.
+use crate::utils;
+
+/// A database that stores the root hash and the files. It persists the
+/// root hash and the files to a JSON file.
 pub struct Db {
     json_path: PathBuf,
+    uploads: HashMap<String, Vec<String>>,
 }
 
 impl Db {
-    /// Creates a new `Db` instance
+    /// Creates a new `Db` instance.
     pub fn new(json_path: PathBuf) -> Self {
-        Self { json_path }
+        let uploads = Self::read_uploads(&json_path).unwrap_or_default();
+        Self { json_path, uploads }
     }
 
-    /// Persists filenames and their corresponding root hashes to a JSON file.
-    /// Returns an `Err` if the JSON file can't be opened or written.
+    /// Persists the root hash and the files to the database.
     pub fn persist(
-        &self,
+        &mut self,
         root_hash: &str,
-        files: &[PathBuf],
+        files: &HashSet<PathBuf>,
     ) -> anyhow::Result<()> {
         let file = OpenOptions::new()
             .write(true)
             .create(true)
             .open(&self.json_path)?;
 
-        println!("root_hash: {}", root_hash);
-        let files: Vec<String> = files
-            .iter()
-            .map(|path| {
-                path.file_name()
-                    .and_then(|n| n.to_str().map(|s| s.to_string()))
-            })
-            .flatten()
-            .collect();
+        self.uploads.insert(
+            root_hash.to_string(),
+            utils::get_filenames(files).into_iter().collect::<Vec<_>>(),
+        );
 
-        let json = json!({
-            "root_hash": root_hash,
-            "files": files,
-        });
-
-        serde_json::to_writer_pretty(file, &json)?;
-        Ok(())
+        Ok(serde_json::to_writer_pretty(file, &self.uploads)?)
     }
 
-    /// Reads filenames and their corresponding root hashes from a JSON file.
-    pub fn get_all(&self) -> anyhow::Result<()> {
-        let Ok(file) = OpenOptions::new().read(true).open(&self.json_path) else {
-            return Ok(());
+    /// Returns all the uploaded files.
+    pub fn get_uploads(&self) -> &HashMap<String, Vec<String>> {
+        &self.uploads
+    }
+
+    /// Reads the uploads from the JSON file.
+    fn read_uploads(
+        json_path: &PathBuf,
+    ) -> anyhow::Result<HashMap<String, Vec<String>>> {
+        let file = OpenOptions::new().read(true).open(json_path)?;
+        Ok(serde_json::from_reader(file)?)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::hashset;
+    use std::{fs::remove_file, io::Write};
+    use tempfile::tempdir;
+
+    // Macro to create a HashMap
+    macro_rules! hashmap {
+        ($( $key: expr => $val: expr ),*) => {{
+            let mut _map = HashMap::new();
+            $( _map.insert($key.to_string(), $val.to_vec()); )*
+            _map
+        }}
+    }
+
+    #[test]
+    fn test_persist_and_get_uploads() {
+        // Create a temporary directory for the JSON file
+        let temp_dir = tempdir().unwrap();
+        let json_path = temp_dir.path().join("db.json");
+
+        // Create a new Db instance
+        let mut db = Db::new(json_path.clone());
+
+        // Persist some files to the JSON file
+        let root_hash = "abcd1234";
+        let files =
+            hashset!(PathBuf::from("file1.txt"), PathBuf::from("file2.txt"));
+
+        db.persist(root_hash, &files).unwrap();
+
+        // Get the uploads from the JSON file
+        let uploads = db.get_uploads();
+
+        // Verify that the root hash and files are correct
+        let expected_uploads = hashmap! {
+            root_hash.to_string() => vec![
+                "file1.txt".to_string(),
+                "file2.txt".to_string(),
+            ]
         };
-        let json: serde_json::Value = serde_json::from_reader(file)?;
-        let root_hash = json["root_hash"].as_str().unwrap();
-        let files = json["files"].as_array().unwrap();
-        println!("root_hash: {}", root_hash);
-        println!("files: {:?}", files);
-        Ok(())
+        assert_eq!(*uploads, expected_uploads);
+
+        // Clean up the temporary directory
+        remove_file(json_path).unwrap();
+    }
+
+    #[test]
+    fn test_persist_with_no_files() {
+        // Create a temporary directory for the JSON file
+        let temp_dir = tempdir().unwrap();
+        let json_path = temp_dir.path().join("db.json");
+
+        // Create a new Db instance
+        let mut db = Db::new(json_path.clone());
+
+        // Persist an empty list of files to the JSON file
+        let root_hash = "abcd1234";
+        let files = HashSet::new();
+        db.persist(root_hash, &files).unwrap();
+
+        // Get the uploads from the JSON file
+        let uploads = db.get_uploads();
+
+        // Verify that the root hash and files are correct
+        let expected_uploads = hashmap! {
+            root_hash.to_string() => vec![]
+        };
+        assert_eq!(*uploads, expected_uploads);
+
+        // Clean up the temporary directory
+        remove_file(json_path).unwrap();
+    }
+
+    #[test]
+    fn test_get_uploads_with_no_json_file() {
+        // Create a temporary directory for the JSON file
+        let temp_dir = tempdir().unwrap();
+        let json_path = temp_dir.path().join("db.json");
+
+        // Create a new Db instance
+        let db = Db::new(json_path.clone());
+
+        // Get the uploads from the non-existent JSON file
+        let uploads = db.get_uploads();
+
+        // Verify that the uploads are empty
+        let expected_uploads = hashmap! {};
+        assert_eq!(*uploads, expected_uploads);
+    }
+
+    #[test]
+    fn test_read_uploads_with_invalid_json_file() {
+        // Create a temporary directory for the JSON file
+        let temp_dir = tempdir().unwrap();
+        let json_path = temp_dir.path().join("db.json");
+
+        // Create an empty JSON file
+        let mut file = OpenOptions::new()
+            .write(true)
+            .create(true)
+            .open(&json_path)
+            .unwrap();
+        file.write_all(b"invalid json").unwrap();
+
+        // Try to read the uploads from the invalid JSON file
+        let result = Db::read_uploads(&json_path);
+
+        // Verify that an error is returned
+        assert!(result.is_err());
+
+        // Clean up the temporary directory
+        remove_file(json_path).unwrap();
     }
 }

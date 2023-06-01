@@ -1,8 +1,10 @@
 use anyhow::Result;
+use std::collections::HashSet;
 use std::fs::{self, File};
 use std::io::{Read, Write};
 use std::path::PathBuf;
-/// Reads the contents of the files specified by `paths`.
+/// Reads the contents of the files specified by `paths`. If a duplicate path
+/// is specified, it will be read once.
 ///
 /// # Arguments
 ///
@@ -12,7 +14,7 @@ use std::path::PathBuf;
 /// # Errors
 ///
 /// Returns an `Err` if any file can't be opened or read.
-pub fn read_files(paths: &[PathBuf]) -> Result<Vec<Vec<u8>>> {
+pub fn read_files(paths: &HashSet<PathBuf>) -> Result<Vec<Vec<u8>>> {
     paths
         .iter()
         .map(|path| {
@@ -59,18 +61,18 @@ pub fn write_file(path: &PathBuf, data: &[u8]) -> Result<()> {
 
 #[cfg(test)]
 mod tests {
+    use crate::hashset;
     use super::*;
     use std::fs;
     use std::io::Write;
-
     #[test]
     fn test_read_files() {
         // Write a temporary file to read
 
         let mut file = File::create("/tmp/testfile").unwrap();
         file.write_all(b"Hello, world!").unwrap();
-
-        let contents = read_files(&[PathBuf::from("/tmp/testfile")]).unwrap();
+        let paths = hashset![PathBuf::from("/tmp/testfile")];
+        let contents = read_files(&paths).unwrap();
         // Clean up
         fs::remove_file("/tmp/testfile").unwrap();
 

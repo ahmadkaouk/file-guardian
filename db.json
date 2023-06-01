@@ -1,6 +1,11 @@
 {
-  "files": [
-    "file1"
+  "612ec896f1e05f0a763eae0d052fd1f704e66a996277e35a8a6fa2dea01302d6": [
+    "file3",
+    "file1",
+    "file2"
   ],
-  "root_hash": "315f5bdb76d078c43b8ac0064e4a0164612b1fce77c869345bfc94c75894edd3"
+  "2dba5dbc339e7316aea2683faf839c1b7b1ee2313db792112588118df066aa35": [
+    "file3",
+    "file2"
+  ]
 }

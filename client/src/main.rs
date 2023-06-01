@@ -32,6 +32,9 @@ fn main() -> anyhow::Result<()> {
                 .ok_or(anyhow::anyhow!("No root hash"))?;
 
             db.persist(&root_hash, &files)?;
+
+            // Delete the files
+            file::delete_files(&files)?;
         }
         SubCommand::Download { file: _ } => {
             // download(&file)?;

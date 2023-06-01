@@ -14,7 +14,7 @@ pub enum SubCommand {
     List,
     /// Upload one or more files(s) to the server
     Upload {
-        #[arg(short, long, value_name = "FILES", action = clap::ArgAction::Append)]
+        #[arg(short, long, value_name = "FILE", action = clap::ArgAction::Append)]
         #[clap(required = true)]
         files: Vec<PathBuf>,
     },

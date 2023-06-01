@@ -36,7 +36,7 @@ pub fn read_files(paths: &HashSet<PathBuf>) -> Result<Vec<Vec<u8>>> {
 /// # Errors
 ///
 /// Returns an `Err` if any file can't be deleted.
-pub fn delete_files(paths: &[PathBuf]) -> Result<()> {
+pub fn delete_files(paths: &HashSet<PathBuf>) -> Result<()> {
     for path in paths {
         fs::remove_file(path)?;
     }
@@ -61,8 +61,8 @@ pub fn write_file(path: &PathBuf, data: &[u8]) -> Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use crate::hashset;
     use super::*;
+    use crate::hashset;
     use std::fs;
     use std::io::Write;
     #[test]
@@ -84,7 +84,7 @@ mod tests {
         // Create a temporary file to delete
         File::create("/tmp/testfile1").unwrap();
 
-        delete_files(&[PathBuf::from("/tmp/testfile1")]).unwrap();
+        delete_files(&hashset!(PathBuf::from("/tmp/testfile1"))).unwrap();
 
         // Test that the file was deleted
         assert!(File::open("/tmp/testfile1").is_err());

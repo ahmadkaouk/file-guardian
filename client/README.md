@@ -1,7 +1,3 @@
-Sure, here is a draft of the README file for the client crate:
-
----
-
 # File Transfer Client
 
 The File Transfer Client is a command-line tool for uploading, downloading, and verifying files from a remote server, written in Rust. It utilizes Merkle trees to ensure the integrity of data during transmission, allowing the client to verify the authenticity and integrity of each file it retrieves.

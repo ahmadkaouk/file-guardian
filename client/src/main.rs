@@ -23,13 +23,14 @@ fn main() -> anyhow::Result<()> {
             utils::print_uploads(&uploads);
         }
         SubCommand::Upload { files } => {
-            let files: HashSet<_> = files.into_iter().collect();
+            // Remove duplicates
+            let files = utils::dedup(files);
             // Read the files and compute the root hash
             let data = file::read_files(&files)?;
             let root_hash = MerkleTree::<Sha256Hasher>::new(&data)?
                 .root()
                 .map(|r| utils::bytes_to_hex_string(r))
-                .ok_or(anyhow::anyhow!("No root hash"))?;
+                .ok_or(anyhow::anyhow!("Root Hash could not be computed"))?;
 
             db.persist(&root_hash, &files)?;
 

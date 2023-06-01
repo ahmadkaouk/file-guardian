@@ -1,5 +1,5 @@
 // src/db.rs
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::fs::OpenOptions;
 use std::path::PathBuf;
 
@@ -23,17 +23,15 @@ impl Db {
     pub fn persist(
         &mut self,
         root_hash: &str,
-        files: &HashSet<PathBuf>,
+        files: &[PathBuf],
     ) -> anyhow::Result<()> {
         let file = OpenOptions::new()
             .write(true)
             .create(true)
             .open(&self.json_path)?;
 
-        self.uploads.insert(
-            root_hash.to_string(),
-            utils::get_filenames(files).into_iter().collect::<Vec<_>>(),
-        );
+        self.uploads
+            .insert(root_hash.to_string(), utils::get_filenames(files));
 
         Ok(serde_json::to_writer_pretty(file, &self.uploads)?)
     }
@@ -55,7 +53,6 @@ impl Db {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::hashset;
     use std::{fs::remove_file, io::Write};
     use tempfile::tempdir;
 
@@ -80,7 +77,7 @@ mod tests {
         // Persist some files to the JSON file
         let root_hash = "abcd1234";
         let files =
-            hashset!(PathBuf::from("file1.txt"), PathBuf::from("file2.txt"));
+            vec!(PathBuf::from("file1.txt"), PathBuf::from("file2.txt"));
 
         db.persist(root_hash, &files).unwrap();
 
@@ -90,8 +87,8 @@ mod tests {
         // Verify that the root hash and files are correct
         let expected_uploads = hashmap! {
             root_hash.to_string() => vec![
-                "file1.txt".to_string(),
                 "file2.txt".to_string(),
+                "file1.txt".to_string(),
             ]
         };
         assert_eq!(*uploads, expected_uploads);
@@ -111,8 +108,7 @@ mod tests {
 
         // Persist an empty list of files to the JSON file
         let root_hash = "abcd1234";
-        let files = HashSet::new();
-        db.persist(root_hash, &files).unwrap();
+        db.persist(root_hash, &[]).unwrap();
 
         // Get the uploads from the JSON file
         let uploads = db.get_uploads();

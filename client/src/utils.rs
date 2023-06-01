@@ -3,18 +3,11 @@ use std::{
     path::PathBuf,
 };
 
-#[macro_export]
-macro_rules! hashset {
-        ($($x:expr),*) => {
-            {
-                let mut set = HashSet::new();
-                $(
-                    set.insert($x);
-                )*
-                set
-            }
-        };
-    }
+/// Remove duplicate elements from a vector.
+pub fn dedup<T: Eq + std::hash::Hash + Clone>(vec: Vec<T>) -> Vec<T> {
+    let mut set = HashSet::new();
+    vec.into_iter().filter(|e| set.insert(e.clone())).collect()
+}
 
 /// Converts a byte array of length 32 to a hexadecimal string.    
 pub fn bytes_to_hex_string(bytes: &[u8; 32]) -> String {
@@ -22,7 +15,7 @@ pub fn bytes_to_hex_string(bytes: &[u8; 32]) -> String {
 }
 
 /// Get file names from a set of paths.
-pub fn get_filenames(paths: &HashSet<PathBuf>) -> HashSet<String> {
+pub fn get_filenames(paths: &[PathBuf]) -> Vec<String> {
     paths
         .iter()
         .map(|path| {
@@ -59,15 +52,15 @@ mod tests {
 
     #[test]
     fn test_get_filenames() {
-        let paths = hashset![
+        let paths = vec![
             PathBuf::from("foo.txt"),
             PathBuf::from("bar.txt"),
-            PathBuf::from("/usr/baz")
+            PathBuf::from("/usr/baz"),
         ];
-        let expected = hashset![
+        let expected = vec![
             "foo.txt".to_string(),
             "bar.txt".to_string(),
-            "baz".to_string()
+            "baz".to_string(),
         ];
         assert_eq!(get_filenames(&paths), expected);
     }

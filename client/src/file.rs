@@ -14,7 +14,7 @@ use std::path::PathBuf;
 /// # Errors
 ///
 /// Returns an `Err` if any file can't be opened or read.
-pub fn read_files(paths: &HashSet<PathBuf>) -> Result<Vec<Vec<u8>>> {
+pub fn read_files(paths: &[PathBuf]) -> Result<Vec<Vec<u8>>> {
     paths
         .iter()
         .map(|path| {
@@ -36,7 +36,7 @@ pub fn read_files(paths: &HashSet<PathBuf>) -> Result<Vec<Vec<u8>>> {
 /// # Errors
 ///
 /// Returns an `Err` if any file can't be deleted.
-pub fn delete_files(paths: &HashSet<PathBuf>) -> Result<()> {
+pub fn delete_files(paths: &[PathBuf]) -> Result<()> {
     for path in paths {
         fs::remove_file(path)?;
     }
@@ -62,7 +62,6 @@ pub fn write_file(path: &PathBuf, data: &[u8]) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::hashset;
     use std::fs;
     use std::io::Write;
     #[test]
@@ -71,7 +70,7 @@ mod tests {
 
         let mut file = File::create("/tmp/testfile").unwrap();
         file.write_all(b"Hello, world!").unwrap();
-        let paths = hashset![PathBuf::from("/tmp/testfile")];
+        let paths = vec![PathBuf::from("/tmp/testfile")];
         let contents = read_files(&paths).unwrap();
         // Clean up
         fs::remove_file("/tmp/testfile").unwrap();
@@ -84,7 +83,7 @@ mod tests {
         // Create a temporary file to delete
         File::create("/tmp/testfile1").unwrap();
 
-        delete_files(&hashset!(PathBuf::from("/tmp/testfile1"))).unwrap();
+        delete_files(&vec![PathBuf::from("/tmp/testfile1")]).unwrap();
 
         // Test that the file was deleted
         assert!(File::open("/tmp/testfile1").is_err());

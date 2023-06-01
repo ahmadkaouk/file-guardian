@@ -1,8 +1,8 @@
 use clap::Parser;
 use cli::{Args, SubCommand};
 use db::Db;
-use merkle_tree::{MerkleTree, Sha256Hasher};
-use std::{collections::HashSet, path::PathBuf};
+use merkle_tree::MerkleTree;
+use std::path::PathBuf;
 
 mod cli;
 mod db;
@@ -27,7 +27,7 @@ fn main() -> anyhow::Result<()> {
             let files = utils::dedup(files);
             // Read the files and compute the root hash
             let data = file::read_files(&files)?;
-            let root_hash = MerkleTree::<Sha256Hasher>::new(&data)?
+            let root_hash = MerkleTree::new(&data)?
                 .root()
                 .map(|r| utils::bytes_to_hex_string(r))
                 .ok_or(anyhow::anyhow!("Root Hash could not be computed"))?;

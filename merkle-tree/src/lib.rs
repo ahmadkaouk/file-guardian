@@ -18,10 +18,10 @@
 //! Merkle tree:
 //!
 //! ```rust
-//! use merkle_tree::{MerkleTree, Sha256Hasher};
+//! use merkle_tree::MerkleTree;
 //!
 //! let data = vec!["hello", "world"];
-//! let tree = MerkleTree::<Sha256Hasher>::new(&data);
+//! let tree = MerkleTree::new(&data);
 //! ```
 //!
 //!
@@ -33,8 +33,6 @@
 //! * [Merkle tree - Wikipedia](https://en.wikipedia.org/wiki/Merkle_tree)
 //! * [Mastering Bitcoin: Unlocking Digital Cryptocurrencies](https://www.oreilly.com/library/view/mastering-bitcoin/9781491902639/ch07.html)
 mod error;
-mod hasher;
 mod tree;
 
-pub use hasher::*;
 pub use tree::*;

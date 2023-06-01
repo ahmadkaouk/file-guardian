@@ -24,7 +24,7 @@ You can create a new Merkle Tree from a vector of data using the `new` method:
 
 ```rust
 let data = vec!["hello", "world"].iter().map(|s| s.as_bytes().to_vec()).collect();
-let tree = MerkleTree::new::<Sha256Hasher>::(&data).unwrap();
+let tree = MerkleTree::(&data).unwrap();
 ```
 
 You can get the root hash of the tree using the `root` method:
@@ -48,7 +48,7 @@ Here's an example of how to use the `merkle-tree` package to verify the integrit
 ```rust
 use std::fs::File;
 use std::io::{BufReader, Read};
-use merkle_tree::{MerkleTree, Sha256Hasher};
+use merkle_tree::{MerkleTree};
 
 // Read the file into a buffer
 let mut file = BufReader::new(File::open("file.txt").unwrap());
@@ -56,12 +56,12 @@ let mut buffer = Vec::new();
 file.read_to_end(&mut buffer).unwrap();
 
 // Compute the Merkle Tree of the file
-let tree = MerkleTree::<Sha256Hasher>::new(&[buffer]).unwrap();
+let tree = MerkleTree::new(&[buffer]).unwrap();
 
 // Verify the integrity of the file against a known root hash
 let root_hash = hex::decode("0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef").unwrap();
 let proof = tree.proof(0).unwrap();
-assert!(proof.verify(&Sha256Hasher::hash(&buffer), &root_hash));
+assert!(proof.verify(&MerkleTree::hash(&buffer), &root_hash));
 ```
 
 This example reads the contents of a file into a buffer, computes the Merkle Tree of the file data using SHA-256 as the hash function, and verifies the integrity of the file against a known root hash. The `hex` crate is used to decode the root hash from a hex string.

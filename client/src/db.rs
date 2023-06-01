@@ -87,8 +87,8 @@ mod tests {
         // Verify that the root hash and files are correct
         let expected_uploads = hashmap! {
             root_hash.to_string() => vec![
-                "file2.txt".to_string(),
                 "file1.txt".to_string(),
+                "file2.txt".to_string(),
             ]
         };
         assert_eq!(*uploads, expected_uploads);

@@ -4,7 +4,7 @@ GitHub Copilot: Sure, here's an example README for the `merkle-tree` package:
 
 A Rust implementation of a Merkle Tree data structure.
 
-The Merkle Tree struct that can be instantiated with any Hasher type that implements the `Hashe`r trait. The Merkle Tree is represented as a binary tree where each leaf node represents a data block and each non-leaf node represents a hash of its children nodes. 
+The Merkle Tree is represented as a binary tree where each leaf node represents a data block and each non-leaf node represents a hash of its children nodes. 
 
 ## Usage
 
@@ -48,7 +48,7 @@ Here's an example of how to use the `merkle-tree` package to verify the integrit
 ```rust
 use std::fs::File;
 use std::io::{BufReader, Read};
-use merkle_tree::{MerkleTree};
+use merkle_tree::MerkleTree;
 
 // Read the file into a buffer
 let mut file = BufReader::new(File::open("file.txt").unwrap());

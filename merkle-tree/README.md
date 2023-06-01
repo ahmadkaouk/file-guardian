@@ -24,7 +24,7 @@ You can create a new Merkle Tree from a vector of data using the `new` method:
 
 ```rust
 let data = vec!["hello", "world"].iter().map(|s| s.as_bytes().to_vec()).collect();
-let tree = MerkleTree::new(&data).unwrap();
+let tree = MerkleTree::new::<Sha256Hasher>::(&data).unwrap();
 ```
 
 You can get the root hash of the tree using the `root` method:

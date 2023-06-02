@@ -28,7 +28,8 @@ impl TcpClient {
     ///
     /// # Arguments
     ///
-    /// * `files` - A vector of byte vectors, where each byte vector represents a file.
+    /// * `files` - A vector of byte vectors, where each byte vector represents
+    ///   a file.
     ///
     /// # Errors
     ///

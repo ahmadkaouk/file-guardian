@@ -82,7 +82,6 @@ impl FileStore {
     /// * `index` - The index of the file to retrieve.
     pub fn get_file(&self, root_hash: &str, index: usize) -> Result<Vec<u8>> {
         let dir = self.root_dir.join(root_hash);
-        println!("dir: {:?}", dir);
         let file_path = dir.join(index.to_string());
         Ok(fs::read(file_path)?)
     }

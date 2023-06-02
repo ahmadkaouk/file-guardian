@@ -1,6 +1,10 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use merkle_tree::MerkleTree;
-use std::{fs, path::PathBuf};
+use std::{
+    fs::{self, File},
+    io::Write,
+    path::{Path, PathBuf},
+};
 
 /// A struct that represents a file store.
 #[derive(Clone)]
@@ -10,13 +14,15 @@ pub struct FileStore {
 
 impl FileStore {
     /// Creates a new instance of `FileStore` with the given root directory.
-    pub fn new(root_dir: PathBuf) -> Result<Self> {
+    pub fn new(root_dir: impl AsRef<Path>) -> Result<Self> {
         // Create the root directory if it doesn't exist
-        if !root_dir.exists() {
+        if !root_dir.as_ref().exists() {
             fs::create_dir_all(&root_dir)?;
         }
 
-        Ok(Self { root_dir })
+        Ok(Self {
+            root_dir: root_dir.as_ref().to_path_buf(),
+        })
     }
 
     /// Stores the given files in the file store and returns the root hash of
@@ -24,15 +30,14 @@ impl FileStore {
     ///
     /// # Arguments
     ///
-    /// * `files` - A `HashMap` containing the file names and their data as
-    ///   `Vec<u8>`.
+    /// * `files` - A vector containing the file data as `Vec<u8>`.
     ///
     /// # Returns
     ///
     /// A `Result` containing the root hash of the Merkle tree as a `String` if
-    /// the operation was successful, or a `Box<dyn std::error::Error>` if
-    /// an error occurred.
-    pub fn store_files(&self, files: Vec<Vec<u8>>) -> anyhow::Result<String> {
+    /// the operation was successful, or an `anyhow::Error` if an error
+    /// occurred.
+    pub fn store_files(&self, files: Vec<Vec<u8>>) -> Result<String> {
         // Compute the Merkle tree
         let tree = MerkleTree::new(&files)?;
 
@@ -40,7 +45,7 @@ impl FileStore {
         let root_hash = tree
             .root()
             .map(|r| r.iter().map(|byte| format!("{:02x}", byte)).collect())
-            .ok_or(anyhow::anyhow!("Root Hash could not be computed"))?;
+            .ok_or_else(|| anyhow!("Root Hash could not be computed"))?;
 
         // Create a new directory for the files, named after the root hash
         let dir = self.root_dir.join(&root_hash);
@@ -53,8 +58,31 @@ impl FileStore {
 
         // Serialize and store the Merkle tree
         let tree_json = serde_json::to_string(&tree)?;
-        fs::write(dir.join("tree.json"), tree_json)?;
+        let mut file = File::create(dir.join("tree.json"))?;
+        file.write_all(tree_json.as_bytes())?;
 
         Ok(root_hash)
+    }
+
+    /// Returns the Merkle tree with the given root hash.
+    pub fn get_tree(
+        &self,
+        root_hash: &str,
+    ) -> Result<MerkleTree> {
+        let dir = self.root_dir.join(root_hash);
+        let tree_json = fs::read_to_string(dir.join("tree.json"))?;
+        let tree: MerkleTree = serde_json::from_str(&tree_json)?;
+        Ok(tree)
+    }
+
+    /// Returns the file with the given index and root hash.
+    pub fn get_file(
+        &self,
+        root_hash: &str,
+        index: usize,
+    ) -> Result<Vec<u8>> {
+        let dir = self.root_dir.join(root_hash);
+        let file_path = dir.join(index.to_string());
+        Ok(fs::read(file_path)?)
     }
 }

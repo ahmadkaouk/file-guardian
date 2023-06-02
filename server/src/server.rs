@@ -1,8 +1,6 @@
-use std::path::PathBuf;
-
 use anyhow::Result;
-use merkle_tree::MerkleTree;
-use tokio::io::AsyncReadExt;
+use std::path::PathBuf;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
 
 use crate::store::{self, FileStore};
@@ -18,36 +16,59 @@ impl Server {
         }
     }
 
-    async fn handle_upload(stream: TcpStream) -> Result<Vec<Vec<u8>>> {
+    async fn handle_upload(stream: &mut TcpStream) -> Result<Vec<Vec<u8>>> {
         let mut res = vec![];
-
-        let mut stream = stream;
-
-        let mut number_of_files = [0_u8; std::mem::size_of::<usize>()];
-        stream.read_exact(&mut number_of_files).await?;
-        let number_of_files = usize::from_be_bytes(number_of_files);
+        let number_of_files: usize = stream.read_u64().await? as usize;
 
         for _ in 0..number_of_files {
-            let mut file_size = [0_u8; std::mem::size_of::<usize>()];
-            stream.read_exact(&mut file_size).await?;
-            let file_size = usize::from_be_bytes(file_size);
+            let file_size = stream.read_u64().await? as usize;
             let mut file = vec![0; file_size];
             stream.read_exact(&mut file).await?;
             res.push(file);
-         }
+        }
         Ok(res)
     }
 
     async fn handle_download(
-        _stream: TcpStream,
-        _filename: String,
+        stream: &mut TcpStream,
+        store: &FileStore,
     ) -> Result<()> {
-        // implement download functionality here
-        println!("Downloading file");
+        // receive root hash
+        let mut root_hash = [0; 32];
+        stream.read_exact(&mut root_hash).await?;
+        // convert root hash to hex string
+        let root_hash: String = root_hash
+            .iter()
+            .map(|byte| format!("{:02x}", byte))
+            .collect();
+
+        // receive index
+        let index = stream.read_u64().await? as usize;
+        // get file from store
+        let file = store.get_file(&root_hash, index)?;
+
+        // Generate proof for file and export it as a vector of bytes
+        let proof = store
+            .get_tree(&root_hash)?
+            .proof(index)?
+            .into_iter()
+            .flatten()
+            .collect::<Vec<u8>>();
+
+        // send file size
+        stream.write_all(&(file.len().to_be_bytes())).await?;
+        // send file
+        stream.write_all(&file).await?;
+        // send proof
+        stream.write_all(&proof).await?;
+
         Ok(())
     }
 
-    async fn handle_client(mut stream: TcpStream, store: FileStore) -> Result<()> {
+    async fn handle_client(
+        stream: &mut TcpStream,
+        store: &FileStore,
+    ) -> Result<()> {
         let mut command = [0; 10];
         stream.read(&mut command).await?;
         let command =
@@ -59,9 +80,7 @@ impl Server {
                 store.store_files(files)?;
             }
             "download" => {
-                let mut filename = String::new();
-                stream.read_to_string(&mut filename).await?;
-                Self::handle_download(stream, filename).await?;
+                Self::handle_download(stream, store).await?;
             }
             _ => println!("Unknown command"),
         }
@@ -72,10 +91,10 @@ impl Server {
     pub async fn run(&self) -> Result<()> {
         let listener = TcpListener::bind(&self.address).await?;
         loop {
-            let (socket, _) = listener.accept().await?;
+            let (mut socket, _) = listener.accept().await?;
             let store = store::FileStore::new(PathBuf::from("server_store"))?;
             tokio::spawn(async move {
-                Self::handle_client(socket, store)
+                Self::handle_client(&mut socket, &store)
                     .await
                     .unwrap_or_else(|error| eprintln!("{:?}", error));
             });

@@ -1,5 +1,4 @@
 use anyhow::Result;
-use std::fs::File;
 use std::io::prelude::*;
 use std::io::Write;
 use std::net::TcpStream;
@@ -9,7 +8,7 @@ pub(crate) struct TcpClient {
 }
 
 impl TcpClient {
-    pub fn new(address: String) -> Result<Self> {
+    pub fn new(address: &str) -> Result<Self> {
         Ok(Self {
             stream: TcpStream::connect(address)?,
         })
@@ -22,7 +21,7 @@ impl TcpClient {
         // Send the number of files to be uploaded
         self.stream.write_all(&files.len().to_be_bytes())?;
 
-        // send file names
+        // Send each file
         for file in files {
             self.stream.write_all(&file.len().to_be_bytes())?;
             self.stream.write_all(&file)?;
@@ -31,18 +30,22 @@ impl TcpClient {
         Ok(())
     }
 
-    fn download_file(&mut self, file_name: &str) -> std::io::Result<()> {
+    pub fn get_file(
+        &mut self,
+        root_hash: &str,
+        index: usize,
+    ) -> anyhow::Result<Vec<u8>> {
         // send download command
         self.stream.write_all(b"download")?;
-        // send file name
-        self.stream.write_all(file_name.as_bytes())?;
+        // send root hash
+        self.stream.write_all(root_hash.as_bytes())?;
+        // send index
+        self.stream.write_all(&index.to_be_bytes())?;
 
-        // receive file data and write it to a local file
-        let mut file_data = vec![];
-        self.stream.read_to_end(&mut file_data)?;
+        // receive file
+        let mut file = vec![];
+        self.stream.read_to_end(&mut file)?;
 
-        let mut local_file = File::create(file_name)?;
-        local_file.write_all(&file_data)?;
-        Ok(())
+        Ok(file)
     }
 }

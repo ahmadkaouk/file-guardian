@@ -39,5 +39,8 @@ pub enum SubCommand {
             default_value = "127.0.0.1:2345"
         )]
         server_addr: String,
+        /// The root hash of the collection of files where the file is located
+        #[arg(short, long)]
+        root_hash: String,
     },
 }

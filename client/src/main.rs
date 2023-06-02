@@ -62,6 +62,8 @@ fn upload(
     for file in files {
         std::fs::remove_file(file)?;
     }
+
+    println!("Succesfully Uploaded files with root hash {}", root_hash);
     Ok(())
 }
 
@@ -85,5 +87,6 @@ fn download(
     // write the file
     fs::write(db.get_db_path().join(filename), file)?;
 
+    println!("Succesfully downloaded file {} to downloads", filename);
     Ok(())
 }

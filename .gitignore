@@ -3,5 +3,5 @@
 Cargo.lock
 db.json
 /tests
-/server_store
+/downloads
 /client_store

@@ -13,6 +13,33 @@ The File Transfer Client is a command-line tool for uploading, downloading, and 
 
 Here's how to use the File Transfer Client:
 
+### Overview
+
+The File Transfer Client is a command-line tool. It has three commands: `upload`, `download`, and `list`. The `upload` command is used to upload one or more files to the server. The `download` command is used to download a file from the server. The `list` command is used to list all the files that have been uploaded to the server.
+
+```bash
+$ cargo run --bin client help
+    Finished dev [unoptimized + debuginfo] target(s) in 0.38s
+     Running `target/debug/client help`
+A Cli client to upload/download files to a server and verify their integrity
+
+Usage: client <COMMAND>
+
+Commands:
+  list      List all the uploaded files
+  upload    Upload one or more files(s) to the server
+  download  Download a file from the server
+  help      Print this message or the help of the given subcommand(s)
+
+Options:
+  -h, --help     Print help
+  -V, --version  Print version
+```
+
+Multiple files can be uploaded to the server in batches. The client computes the Merkle tree for each batch of files and persist the root hashes in a json file `uploads.json`, allowing it to verify the integrity of the files it downloads. The root hashes are also used to identify the files that have been uploaded to the server.
+
+To download a file, we provide the name of the file we want to download along with the root hash of the batch of files that contains the file we want to download. The client uses the root hash to retrieve the file from the server and verify the integrity of the file. Files are stored locally in the `downloads` directory.
+
 ### Building the Client
 
 To build the client, navigate to the root directory of the client crate and use Cargo to build it:
@@ -24,26 +51,35 @@ $ cargo build --release
 
 ### Uploading Files
 
-To upload files, invoke the `upload` command, followed by the path to each file:
-
+To upload files, invoke the `upload` command, followed by the path to each file, and specify the address of the websocket server:
 
 ```bash
-./target/debug/client upload -h
+$ ./target/debug/client upload -h
 Upload one or more files(s) to the server
 
-Usage: client upload --files <FILE>
+Usage: client upload [OPTIONS] --files <FILE>
 
 Options:
   -f, --files <FILE>
-  -h, --help           Print help
-```
+  -s, --server-addr <SERVER_ADDR>  The websocket server address [default: 127.0.0.1:2345]
+  -h, --help                       Print help
+  ```
 
 ### Downloading Files
 
-To download a file from the server, use the `download` command followed by the name of the file:
+To download a file from the server, use the `download` command:
 
 ```bash
-$ ./target/release/client download file1.txt
+$ ./target/debug/client upload -h
+Download a file from the server
+
+Usage: client download [OPTIONS] --file <FILE> --root-hash <ROOT_HASH>
+
+Options:
+  -f, --file <FILE>
+  -s, --server-addr <SERVER_ADDR>  The websocket server address [default: 127.0.0.1:2345]
+  -r, --root-hash <ROOT_HASH>      The root hash of the collection of files where the file is located
+  -h, --help                       Print help
 ```
 
 ### Listing Files
@@ -51,7 +87,7 @@ $ ./target/release/client download file1.txt
 To view a list of uploaded files, use the `list` command:
 
 ```bash
-./target/debug/client list --help
+$ ./target/debug/client list --help
 List all the uploaded files
 
 Usage: client list
@@ -65,7 +101,7 @@ Options:
 Suppose you want to upload two files to the server:
 
 ```bash
-$ ./target/release/client upload -f ~/Documents/file1.txt -f ~/Documents/file2.txt
+$ ./target/release/client upload -f ~/Documents/file1.txt -f ~/Documents/file2.txt -s 127.0.0.1:2345
 ```
 
 You should see a success message along with the root hash for the uploaded files.
@@ -73,7 +109,7 @@ You should see a success message along with the root hash for the uploaded files
 If you want to download `file1.txt` later, you can do it like this:
 
 ```bash
-$ ./target/release/client download file1.txt
+$ ./target/release/client download --root-hash 96b2874ed9d2cb4d68156d68e3dffa0998d2f7cd17855394e9928cd02ddbd7e4 --file file3
 ```
 
 If you want to list all the files that have been uploaded to the server, you can do it like this:

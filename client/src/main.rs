@@ -13,7 +13,7 @@ mod utils;
 
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
-    let mut db = Db::new(PathBuf::from("client_store"), "uploads.json")?;
+    let mut db = Db::new(PathBuf::from("downloads"), "uploads.json")?;
 
     match args.subcmd {
         SubCommand::List => {

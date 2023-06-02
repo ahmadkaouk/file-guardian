@@ -36,7 +36,7 @@ impl Server {
         // receive root hash
         let mut root_hash = [0; 64];
         stream.read_exact(&mut root_hash).await?;
-       
+
         // convert root hash to hex string, every 2 bytes is a hex digit
         let root_hash = std::str::from_utf8(&root_hash)?;
 

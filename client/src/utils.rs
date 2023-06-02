@@ -1,5 +1,10 @@
-use std::{collections::{HashMap, HashSet}, path::PathBuf, fs::File, io::Read};
 use anyhow::Result;
+use std::{
+    collections::{HashMap, HashSet},
+    fs::File,
+    io::Read,
+    path::PathBuf,
+};
 
 /// Remove duplicate elements from a vector.
 pub fn dedup<T: Eq + std::hash::Hash + Clone>(vec: Vec<T>) -> Vec<T> {

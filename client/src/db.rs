@@ -14,6 +14,15 @@ pub struct Db {
 
 impl Db {
     /// Creates a new `Db` instance.
+    ///
+    /// # Arguments
+    ///
+    /// * `db_path` - The path to the database directory.
+    /// * `db` - The name of the JSON file that stores the database.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the database file cannot be created or read.
     pub fn new(db_path: PathBuf, db: &str) -> Result<Self> {
         let mut uploads = HashMap::new();
         if !db_path.exists() {
@@ -33,6 +42,15 @@ impl Db {
     }
 
     /// Persists the root hash and the files to the database.
+    ///
+    /// # Arguments
+    ///
+    /// * `root_hash` - The root hash of the Merkle tree that contains the files.
+    /// * `files` - A slice of `PathBuf` objects that represent the files.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the database file cannot be written.
     pub fn persist(
         &mut self,
         root_hash: &str,
@@ -63,6 +81,15 @@ impl Db {
     }
 
     /// Get index of the file in the list of files.
+    ///
+    /// # Arguments
+    ///
+    /// * `root_hash` - The root hash of the Merkle tree that contains the file.
+    /// * `file_name` - The name of the file.
+    ///
+    /// # Returns
+    ///
+    /// Returns the index of the file in the list of files, or `None` if the file is not found.
     pub fn get_index(&self, root_hash: &str, file_name: &str) -> Option<usize> {
         self.uploads
             .get(root_hash)
@@ -74,7 +101,6 @@ impl Db {
         &self.db_path
     }
 }
-
 #[cfg(test)]
 mod tests {
     use super::*;

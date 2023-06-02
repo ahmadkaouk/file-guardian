@@ -5,21 +5,43 @@ use tokio::net::{TcpListener, TcpStream};
 
 use crate::store::{self, FileStore};
 
+/// A server that listens for incoming connections and handles file uploads and
+/// downloads.
 pub struct Server {
     address: String,
 }
 
 impl Server {
+    /// Creates a new `Server` instance.
+    ///
+    /// # Arguments
+    ///
+    /// * `address` - The address that the server listens on.
     pub fn new(address: &str) -> Server {
         Server {
             address: address.to_string(),
         }
     }
 
+    /// Handles a file upload request from a client.
+    ///
+    /// # Arguments
+    ///
+    /// * `stream` - The TCP stream that connects the server to the client.
+    ///
+    /// # Returns
+    ///
+    /// Returns a vector of vectors of bytes that represent the uploaded files.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the file upload fails.
     async fn handle_upload(stream: &mut TcpStream) -> Result<Vec<Vec<u8>>> {
-        let mut res = vec![];
+        // Read the number of files from the client
         let number_of_files: usize = stream.read_u64().await? as usize;
 
+        // Read each file from the client and store it in a vector
+        let mut res = vec![];
         for _ in 0..number_of_files {
             let file_size = stream.read_u64().await? as usize;
             let mut file = vec![0; file_size];
@@ -29,18 +51,28 @@ impl Server {
         Ok(res)
     }
 
+    /// Handles a file download request from a client.
+    ///
+    /// # Arguments
+    ///
+    /// * `stream` - The TCP stream that connects the server to the client.
+    /// * `store` - The file store that contains the files.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the file download fails.
     async fn handle_download(
         stream: &mut TcpStream,
         store: &FileStore,
     ) -> Result<()> {
-        // receive root hash
+        // Read the root hash from the client
         let mut root_hash = [0; 64];
         stream.read_exact(&mut root_hash).await?;
 
-        // convert root hash to hex string, every 2 bytes is a hex digit
+        // Convert the root hash to a hex string
         let root_hash = std::str::from_utf8(&root_hash)?;
 
-        // receive index
+        // Read the index from the client
         let index = stream.read_u64().await? as usize;
         // get file from store
         let file = store.get_file(&root_hash, index)?;

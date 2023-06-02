@@ -7,7 +7,6 @@ use std::{fs, path::PathBuf};
 mod cli;
 mod client;
 mod db;
-mod error;
 
 #[macro_use]
 mod utils;

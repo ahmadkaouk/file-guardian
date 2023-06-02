@@ -14,6 +14,10 @@ pub struct FileStore {
 
 impl FileStore {
     /// Creates a new instance of `FileStore` with the given root directory.
+    ///
+    /// # Arguments
+    ///
+    /// * `root_dir` - The root directory for the file store.
     pub fn new(root_dir: impl AsRef<Path>) -> Result<Self> {
         // Create the root directory if it doesn't exist
         if !root_dir.as_ref().exists() {
@@ -31,12 +35,6 @@ impl FileStore {
     /// # Arguments
     ///
     /// * `files` - A vector containing the file data as `Vec<u8>`.
-    ///
-    /// # Returns
-    ///
-    /// A `Result` containing the root hash of the Merkle tree as a `String` if
-    /// the operation was successful, or an `anyhow::Error` if an error
-    /// occurred.
     pub fn store_files(&self, files: Vec<Vec<u8>>) -> Result<String> {
         // Compute the Merkle tree
         let tree = MerkleTree::new(&files)?;
@@ -65,6 +63,10 @@ impl FileStore {
     }
 
     /// Returns the Merkle tree with the given root hash.
+    ///
+    /// # Arguments
+    ///
+    /// * `root_hash` - The root hash of the Merkle tree to retrieve.
     pub fn get_tree(&self, root_hash: &str) -> Result<MerkleTree> {
         let dir = self.root_dir.join(root_hash);
         let tree_json = fs::read_to_string(dir.join("tree.json"))?;
@@ -73,6 +75,11 @@ impl FileStore {
     }
 
     /// Returns the file with the given index and root hash.
+    ///
+    /// # Arguments
+    ///
+    /// * `root_hash` - The root hash of the Merkle tree containing the file.
+    /// * `index` - The index of the file to retrieve.
     pub fn get_file(&self, root_hash: &str, index: usize) -> Result<Vec<u8>> {
         let dir = self.root_dir.join(root_hash);
         println!("dir: {:?}", dir);

@@ -25,7 +25,6 @@ impl TcpClient {
         for file in files {
             self.stream.write_all(&file.len().to_be_bytes())?;
             self.stream.write_all(&file)?;
-            self.stream.write_all(b"\0\0\0\0")?;
         }
         Ok(())
     }
@@ -34,17 +33,40 @@ impl TcpClient {
         &mut self,
         root_hash: &str,
         index: usize,
-    ) -> anyhow::Result<Vec<u8>> {
+    ) -> Result<Vec<u8>> {
         // send download command
-        self.stream.write_all(b"download")?;
+        self.stream.write_all(b"download\0\0")?;
         // send root hash
         self.stream.write_all(root_hash.as_bytes())?;
         // send index
         self.stream.write_all(&index.to_be_bytes())?;
 
+        // receive file size
+        let mut file_size = [0; std::mem::size_of::<u64>()];
+        self.stream.read_exact(&mut file_size)?;
         // receive file
-        let mut file = vec![];
-        self.stream.read_to_end(&mut file)?;
+        let mut file = vec![0; u64::from_be_bytes(file_size) as usize];
+        self.stream.read_exact(&mut file)?;
+
+        let root_hash = hex::decode(root_hash)?
+            .try_into()
+            .map_err(|_| anyhow::anyhow!("Invalid hash length"))?;
+
+        let mut proof = vec![];
+        self.stream.read_to_end(&mut proof)?;
+        let proof = proof
+            .chunks_exact(32)
+            .map(|chunk| {
+                chunk
+                    .try_into()
+                    .map_err(|_| anyhow::anyhow!("Invalid hash length"))
+            })
+            .collect::<Result<Vec<_>>>()?;
+
+        // verify proof
+        if !merkle_tree::MerkleTree::verify(index, &file, &root_hash, &proof) {
+            return Err(anyhow::anyhow!("Invalid proof"));
+        }
 
         Ok(file)
     }

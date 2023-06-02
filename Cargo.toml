@@ -6,11 +6,3 @@ version  = "0.1.0"
 edition  = "2021"
 authors  = ["Ahmad Kaouk"]
 keywords = ["merkle-tree", "rust", "client", "server"]
-
-[workspace.dependencies]
-sha2        = "0.9.5"
-clap        = "4.3.0"
-anyhow      = "1.0.71"
-serde       = "1.0.163"
-serde_json  = "1.0.96"
-merkle-tree = { version = "0.1.0", path = "./merkle-tree" }

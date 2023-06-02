@@ -44,7 +44,7 @@ impl FileStore {
         // Compute the root hash, and convert it to a hex string
         let root_hash = tree
             .root()
-            .map(|r| r.iter().map(|byte| format!("{:02x}", byte)).collect())
+            .map(|r| hex::encode(r))
             .ok_or_else(|| anyhow!("Root Hash could not be computed"))?;
 
         // Create a new directory for the files, named after the root hash
@@ -65,10 +65,7 @@ impl FileStore {
     }
 
     /// Returns the Merkle tree with the given root hash.
-    pub fn get_tree(
-        &self,
-        root_hash: &str,
-    ) -> Result<MerkleTree> {
+    pub fn get_tree(&self, root_hash: &str) -> Result<MerkleTree> {
         let dir = self.root_dir.join(root_hash);
         let tree_json = fs::read_to_string(dir.join("tree.json"))?;
         let tree: MerkleTree = serde_json::from_str(&tree_json)?;
@@ -76,12 +73,9 @@ impl FileStore {
     }
 
     /// Returns the file with the given index and root hash.
-    pub fn get_file(
-        &self,
-        root_hash: &str,
-        index: usize,
-    ) -> Result<Vec<u8>> {
+    pub fn get_file(&self, root_hash: &str, index: usize) -> Result<Vec<u8>> {
         let dir = self.root_dir.join(root_hash);
+        println!("dir: {:?}", dir);
         let file_path = dir.join(index.to_string());
         Ok(fs::read(file_path)?)
     }

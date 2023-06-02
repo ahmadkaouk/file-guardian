@@ -34,13 +34,11 @@ impl Server {
         store: &FileStore,
     ) -> Result<()> {
         // receive root hash
-        let mut root_hash = [0; 32];
+        let mut root_hash = [0; 64];
         stream.read_exact(&mut root_hash).await?;
-        // convert root hash to hex string
-        let root_hash: String = root_hash
-            .iter()
-            .map(|byte| format!("{:02x}", byte))
-            .collect();
+       
+        // convert root hash to hex string, every 2 bytes is a hex digit
+        let root_hash = std::str::from_utf8(&root_hash)?;
 
         // receive index
         let index = stream.read_u64().await? as usize;

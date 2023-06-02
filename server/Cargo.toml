@@ -7,7 +7,8 @@ edition = "2021"
 
 [dependencies]
 merkle-tree = { version = "0.1.0", path = "../merkle-tree" }
-anyhow      = { workspace = true }
-serde       = { workspace = true }
-serde_json  = { workspace = true }
-tokio = { version = "1.28.2", features = ["full"] }
+anyhow      = "1.0.71"
+serde       = "1.0.163"
+serde_json  = "1.0.96"
+tokio       = { version = "1.28.2", features = ["full"] }
+hex         = "0.4.3"

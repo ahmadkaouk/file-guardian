@@ -53,7 +53,7 @@ fn upload(
     // Compute the root hash
     let root_hash = MerkleTree::new(&data)?
         .root()
-        .map(utils::bytes_to_hex_string)
+        .map(hex::encode)
         .ok_or(anyhow::anyhow!("Root Hash could not be computed"))?;
 
     let mut client = client::TcpClient::new(server_addr)?;
@@ -83,14 +83,8 @@ fn download(
     let mut client = client::TcpClient::new(server_addr)?;
     let file = client.get_file(root_hash, index)?;
 
-    // write the file to disk
-    let dir = PathBuf::from("client_store");
-    // create the directory if it doesn't exist
-    if !dir.exists() {
-        std::fs::create_dir(&dir)?;
-    }
     // write the file
-    fs::write(dir.join(filename), file)?;
+    fs::write(db.get_db_path().join(filename), file)?;
 
     Ok(())
 }

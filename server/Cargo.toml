@@ -10,3 +10,4 @@ merkle-tree = { version = "0.1.0", path = "../merkle-tree" }
 anyhow      = { workspace = true }
 serde       = { workspace = true }
 serde_json  = { workspace = true }
+tokio = { version = "1.28.2", features = ["full"] }

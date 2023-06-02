@@ -51,14 +51,14 @@ impl MerkleTree {
             Vec::with_capacity((data.len() as f64).log2().ceil() as usize);
 
         levels.extend(std::iter::successors(
-            Some(data.into_iter().map(Self::hash).collect::<Vec<Hash>>()),
+            Some(data.iter().map(Self::hash).collect::<Vec<Hash>>()),
             |level| match level.len() {
                 0 | 1 => None,
                 _ => Some(
                     level
                         .chunks(2)
                         .map(|chunk| match chunk.len() {
-                            1 => Self::hash(&chunk[0]),
+                            1 => Self::hash(chunk[0]),
                             _ => Self::hash_nodes(&chunk[0], &chunk[1]),
                         })
                         .collect(),
@@ -109,7 +109,7 @@ impl MerkleTree {
                 (index, Vec::with_capacity(self.levels.len())),
                 |(i, mut proof), level| {
                     let sibling_index = if i % 2 == 0 { i + 1 } else { i - 1 };
-                    proof.push(level[sibling_index].clone());
+                    proof.push(level[sibling_index]);
                     (i / 2, proof)
                 },
             )
@@ -153,7 +153,7 @@ impl MerkleTree {
         let mut combined = [0u8; 64];
         combined[..32].copy_from_slice(left);
         combined[32..].copy_from_slice(right);
-        Self::hash(&combined)
+        Self::hash(combined)
     }
 
     ///
@@ -171,7 +171,7 @@ mod tests {
     #[test]
     fn test_new_empty_data() {
         let data: &[&[u8]] = &[];
-        let result = MerkleTree::new(&data);
+        let result = MerkleTree::new(data);
         assert!(result.is_err());
         assert_eq!(result.err().unwrap(), MerkleTreeError::EmptyData);
     }
@@ -194,7 +194,7 @@ mod tests {
                     &MerkleTree::hash(&data[0]),
                     &MerkleTree::hash(&data[1])
                 ),
-                &MerkleTree::hash(&MerkleTree::hash(&data[2])),
+                &MerkleTree::hash(MerkleTree::hash(&data[2])),
             )
         );
     }

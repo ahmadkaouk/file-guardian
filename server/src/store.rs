@@ -3,6 +3,7 @@ use merkle_tree::MerkleTree;
 use std::{fs, path::PathBuf};
 
 /// A struct that represents a file store.
+#[derive(Clone)]
 pub struct FileStore {
     root_dir: PathBuf,
 }

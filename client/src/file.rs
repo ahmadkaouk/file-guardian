@@ -1,46 +1,22 @@
 use anyhow::Result;
-use std::collections::HashSet;
+
 use std::fs::{self, File};
 use std::io::{Read, Write};
 use std::path::PathBuf;
-/// Reads the contents of the files specified by `paths`. If a duplicate path
-/// is specified, it will be read once.
+/// Reads the contents of the file specified by `path`.
 ///
 /// # Arguments
 ///
-/// * `paths` - A slice of `PathBuf` that contain the paths of the files to
-///   read.
+/// * `path` - A `PathBuf` that contains the path of the file to read.
 ///
 /// # Errors
 ///
-/// Returns an `Err` if any file can't be opened or read.
-pub fn read_files(paths: &[PathBuf]) -> Result<Vec<Vec<u8>>> {
-    paths
-        .iter()
-        .map(|path| {
-            let mut file = File::open(path)?;
-            let mut buffer = Vec::new();
-            file.read_to_end(&mut buffer)?;
-            Ok(buffer)
-        })
-        .collect()
-}
-
-/// Deletes the files specified by `paths`.
-///
-/// # Arguments
-///
-/// * `paths` - A slice of `PathBuf` that contain the paths of the files to
-///   delete.
-///
-/// # Errors
-///
-/// Returns an `Err` if any file can't be deleted.
-pub fn delete_files(paths: &[PathBuf]) -> Result<()> {
-    for path in paths {
-        fs::remove_file(path)?;
-    }
-    Ok(())
+/// Returns an `Err` if the file can't be opened or read.
+pub fn read(path: &PathBuf) -> Result<Vec<u8>> {
+    let mut file = File::open(path)?;
+    let mut buffer = Vec::new();
+    file.read_to_end(&mut buffer)?;
+    Ok(buffer)
 }
 
 /// Writes `data` to the file specified by `path`.
@@ -71,22 +47,14 @@ mod tests {
         let mut file = File::create("/tmp/testfile").unwrap();
         file.write_all(b"Hello, world!").unwrap();
         let paths = vec![PathBuf::from("/tmp/testfile")];
-        let contents = read_files(&paths).unwrap();
+        let contents = paths
+            .iter()
+            .map(|path| read(path).unwrap())
+            .collect::<Vec<Vec<u8>>>();
         // Clean up
         fs::remove_file("/tmp/testfile").unwrap();
 
         assert_eq!(contents[0], b"Hello, world!");
-    }
-
-    #[test]
-    fn test_delete_files() {
-        // Create a temporary file to delete
-        File::create("/tmp/testfile1").unwrap();
-
-        delete_files(&vec![PathBuf::from("/tmp/testfile1")]).unwrap();
-
-        // Test that the file was deleted
-        assert!(File::open("/tmp/testfile1").is_err());
     }
 
     #[test]

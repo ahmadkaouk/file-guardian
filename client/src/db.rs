@@ -30,8 +30,17 @@ impl Db {
             .create(true)
             .open(&self.json_path)?;
 
-        self.uploads
-            .insert(root_hash.to_string(), utils::get_filenames(files));
+        self.uploads.insert(
+            root_hash.to_string(),
+            files
+                .iter()
+                .map(|f| {
+                    f.file_name()
+                        .and_then(|n| n.to_str().map(|s| s.to_string()))
+                })
+                .flatten()
+                .collect(),
+        );
 
         Ok(serde_json::to_writer_pretty(file, &self.uploads)?)
     }
@@ -77,7 +86,7 @@ mod tests {
         // Persist some files to the JSON file
         let root_hash = "abcd1234";
         let files =
-            vec!(PathBuf::from("file1.txt"), PathBuf::from("file2.txt"));
+            vec![PathBuf::from("file1.txt"), PathBuf::from("file2.txt")];
 
         db.persist(root_hash, &files).unwrap();
 
@@ -130,7 +139,7 @@ mod tests {
         let json_path = temp_dir.path().join("db.json");
 
         // Create a new Db instance
-        let db = Db::new(json_path.clone());
+        let db = Db::new(json_path);
 
         // Get the uploads from the non-existent JSON file
         let uploads = db.get_uploads();

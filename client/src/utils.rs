@@ -1,7 +1,4 @@
-use std::{
-    collections::{HashMap, HashSet},
-    path::PathBuf,
-};
+use std::collections::{HashMap, HashSet};
 
 /// Remove duplicate elements from a vector.
 pub fn dedup<T: Eq + std::hash::Hash + Clone>(vec: Vec<T>) -> Vec<T> {
@@ -12,18 +9,6 @@ pub fn dedup<T: Eq + std::hash::Hash + Clone>(vec: Vec<T>) -> Vec<T> {
 /// Converts a byte array of length 32 to a hexadecimal string.    
 pub fn bytes_to_hex_string(bytes: &[u8; 32]) -> String {
     bytes.iter().map(|byte| format!("{:02x}", byte)).collect()
-}
-
-/// Get file names from a set of paths.
-pub fn get_filenames(paths: &[PathBuf]) -> Vec<String> {
-    paths
-        .iter()
-        .map(|path| {
-            path.file_name()
-                .and_then(|n| n.to_str().map(|s| s.to_string()))
-        })
-        .flatten()
-        .collect()
 }
 
 /// Pretty print of a HashMap of root hashes and files.
@@ -48,20 +33,5 @@ mod tests {
             "00010a0f101f7fffabcdef1234567890a55a3c7e8f9bd0e1f233445566778899"
                 .to_string();
         assert_eq!(bytes_to_hex_string(&bytes), expected);
-    }
-
-    #[test]
-    fn test_get_filenames() {
-        let paths = vec![
-            PathBuf::from("foo.txt"),
-            PathBuf::from("bar.txt"),
-            PathBuf::from("/usr/baz"),
-        ];
-        let expected = vec![
-            "foo.txt".to_string(),
-            "bar.txt".to_string(),
-            "baz".to_string(),
-        ];
-        assert_eq!(get_filenames(&paths), expected);
     }
 }

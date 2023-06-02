@@ -1,5 +1,7 @@
 /target
 .DS_Store
 Cargo.lock
-db.js
+db.json
 /tests
+/server_store
+/client_store

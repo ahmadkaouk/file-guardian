@@ -1,9 +1,6 @@
-// src/db.rs
 use std::collections::HashMap;
 use std::fs::OpenOptions;
 use std::path::PathBuf;
-
-use crate::utils;
 
 /// A database that stores the root hash and the files. It persists the
 /// root hash and the files to a JSON file.

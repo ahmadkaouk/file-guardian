@@ -109,7 +109,7 @@ You should see a success message along with the root hash for the uploaded files
 If you want to download `file1.txt` later, you can do it like this:
 
 ```bash
-$ ./target/release/client download --root-hash 96b2874ed9d2cb4d68156d68e3dffa0998d2f7cd17855394e9928cd02ddbd7e4 --file file3
+$ ./target/release/client download --root-hash 96b2874ed9d2cb4d68156d68e3dffa0998d2f7cd17855394e9928cd02ddbd7e4 --file file3 -s 127.0.0.1:2345
 ```
 
 If you want to list all the files that have been uploaded to the server, you can do it like this:

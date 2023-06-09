@@ -1,10 +1,8 @@
-GitHub Copilot: Sure, here's an example README for the `merkle-tree` package:
-
 # Merkle Tree
 
 A Rust implementation of a Merkle Tree data structure.
 
-The Merkle Tree is represented as a binary tree where each leaf node represents a data block and each non-leaf node represents a hash of its children nodes. 
+The Merkle Tree is represented as a binary tree where each leaf node represents a data block and each non-leaf node represents a hash of its children nodes.
 
 ## Usage
 
